@@ -1,6 +1,6 @@
 # Connect your portfolio backend
 
-This is adapted from EkiZR/Portofolio_V5 (https://github.com/EkiZR/Portofolio_V5). Your personal content and design remain in place.
+Backend setup for Diganta Biswas’s personal portfolio.
 
 ## 1. Connect Supabase
 Create `.env.local` in the project root, based on `.env.example`:

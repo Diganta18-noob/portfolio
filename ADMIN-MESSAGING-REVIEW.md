@@ -1,7 +1,7 @@
 # Admin and messaging review — 31 October 2026
 
-## Source comparison
-Original project: https://github.com/EkiZR/Portofolio_V5. Local baseline: ffd9a61 plus pre-existing personal portfolio edits. The original template supports project/certificate management, public comment moderation, and FormSubmit email. It does not provide a private contact inbox.
+## Project scope
+Repository: https://github.com/Diganta18-noob/portfolio. This review covers project/certificate management, public comment moderation, admin authentication, and the private contact inbox.
 
 ## Changes
 - Replaced dummy Supabase success responses with explicit configuration detection; rejected secret/service-role keys.
