@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+const setup=fs.readFileSync(new URL('../supabase/setup.sql',import.meta.url),'utf8');
+async function fixture(){
+  const db=new PGlite();
+  await db.exec(`
+    create role anon; create role authenticated;
+    create schema auth; create table auth.users(id uuid primary key);
+    create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+    grant usage on schema auth to anon,authenticated;
+    create schema storage;
+    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+    create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+    alter table storage.objects enable row level security;
+    grant usage on schema storage to anon,authenticated;
+    grant select,insert,delete on storage.objects to anon,authenticated;
+  `);
+  return db;
+}
+test('setup upgrades old tables, preserves records and UUID ids, and can run twice',async()=>{
+  const db=await fixture();
+  try{
+    await db.exec(`create table public.projects(id uuid primary key default gen_random_uuid(),"Title" text,"Description" text,"Img" text,"Link" text,"Github" text); insert into public.projects("Title") values('Existing project'); create table public.certificates(id uuid primary key default gen_random_uuid(),"Img" text); create table public.portfolio_comments(id uuid primary key default gen_random_uuid(),user_name text,content text);`);
+    await assert.rejects(db.query('select is_published from public.projects'),/does not exist/);
+    await db.exec(setup);
+    assert.equal((await db.query('select "Title",is_published,order_index from public.projects')).rows[0].Title,'Existing project');
+    assert.equal((await db.query('select is_published from public.projects')).rows[0].is_published,true);
+    await db.exec(setup);
+    assert.equal((await db.query('select count(*)::int as count from public.projects')).rows[0].count,1);
+    assert.equal((await db.query("select data_type from information_schema.columns where table_schema='public' and table_name='projects' and column_name='id'")).rows[0].data_type,'uuid');
+  }finally{await db.close();}
+});
+test('fresh setup enforces inbox privacy, published reads, and no anonymous uploads',async()=>{
+  const db=await fixture();
+  try{
+    await db.exec(setup);
+    await db.exec(`insert into public.projects("Title",is_published) values('Visible',true),('Draft',false); set role anon;`);
+    assert.equal((await db.query('select "Title" from public.projects')).rows.length,1);
+    await assert.rejects(db.query('select * from public.contact_messages'),/permission denied/);
+    await db.query("select public.submit_contact_message('Visitor','visitor@example.com','Test private message')");
+    await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('profile-images','test.png')"),/row-level security/);
+    await db.exec('reset role');
+    assert.equal((await db.query('select count(*)::int as count from public.contact_messages')).rows[0].count,1);
+    await db.exec("set role authenticated");
+    assert.equal((await db.query('select * from public.contact_messages')).rows.length,0);
+  }finally{await db.close();}
+});
