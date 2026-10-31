@@ -28,7 +28,9 @@ values ('YOUR-AUTH-USER-UUID', 'diganta', 'admin')
 on conflict (id) do update set role = 'admin';
 ```
 
-Visit `/login`. Sign in with the account you created. There is no default password or bypass account. Public signup is unnecessary; disable it in your Supabase Auth settings if you do not use it.
+You can instead run `supabase/create-admin-profile.sql` after creating the Auth user with your portfolio contact email; it finds the UUID for you.
+
+Visit `/admin` or `/login`. `/admin` directs you through the protected dashboard and shows login when signed out. Sign in with the account you created. There is no default password or bypass account. Public signup is unnecessary; disable it in your Supabase Auth settings if you do not use it.
 
 ## 4. What is connected
 - `/dashboard/projects`: create, edit, publish/unpublish, and delete projects. New database records appear on the public site after refresh. Image uploads validate type/size and surface storage failures.

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React, { useState, lazy, Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
@@ -82,6 +82,8 @@ function App() {
 
           {/* AUTH */}
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/admin/login" element={<Navigate to="/login" replace />} />
 
           {/* ADMIN (PROTECTED) */}
           <Route

@@ -47,3 +47,18 @@ test('fresh setup enforces inbox privacy, published reads, and no anonymous uplo
     assert.equal((await db.query('select * from public.contact_messages')).rows.length,0);
   }finally{await db.close();}
 });
+
+test('admin setup requires an existing Auth user and is safe to rerun',async()=>{
+  const db=await fixture();
+  try{
+    await db.exec(setup);
+    await db.exec('alter table auth.users add column email text, add column deleted_at timestamptz');
+    const adminSQL=fs.readFileSync(new URL('../supabase/create-admin-profile.sql',import.meta.url),'utf8');
+    await assert.rejects(db.exec(adminSQL),/First create/);
+    await db.exec("insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000001','digantab.cse.jisu21@gmail.com')");
+    await db.exec(adminSQL);
+    await db.exec(adminSQL);
+    const result=await db.query('select role from public.profiles');
+    assert.deepEqual(result.rows,[{role:'admin'}]);
+  }finally{await db.close();}
+});
