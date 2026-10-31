@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
 import { supabase, isBackendConfigured } from "../supabase";
-import { submitMessage } from "../services/backend";
+import { submitContactWithNotification } from "../services/backend";
 import Komentar from "../components/Commentar";
 import SocialLinks from "../components/SocialLinks";
 import AOS from "aos";
@@ -26,6 +26,7 @@ const ContactPage = () => {
   }, []);
 
   const handleChange = (e) => {
+    setStatus(''); setError('');
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -47,8 +48,10 @@ const ContactPage = () => {
     }
     setIsSubmitting(true);
     try {
-      await submitMessage(supabase,formData);
-      setStatus('Your message has been received. Thank you for getting in touch!');
+      const result = await submitContactWithNotification(supabase,formData,{recipient:portfolioConfig.personalInfo.email});
+      setStatus(result.notification === 'accepted'
+        ? 'Your message has been received. Thank you for getting in touch!'
+        : 'Your message was saved to my private inbox. The email notification is temporarily unavailable.');
       setFormData({name:'',email:'',message:''});
     } catch { setError('Your message could not be sent. Please try again or use the email link.'); }
     finally { setIsSubmitting(false); }
@@ -107,6 +110,7 @@ const ContactPage = () => {
 
             <form 
               onSubmit={handleSubmit}
+              onInvalid={() => setStatus('')}
               className="space-y-6"
             >
               {status && <p role="status" className="text-green-300">{status}</p>}

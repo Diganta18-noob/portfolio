@@ -34,7 +34,7 @@ Visit `/login`. Sign in with the account you created. There is no default passwo
 - `/dashboard/projects`: create, edit, publish/unpublish, and delete projects. New database records appear on the public site after refresh. Image uploads validate type/size and surface storage failures.
 - `/dashboard/certificates`: upload/delete certificates with error reporting.
 - `/dashboard/comments`: read, feature/unfeature, and delete public comments.
-- `/dashboard/messages`: read private contact enquiries, mark read/unread, filter unread, paginate, reply through your email app, and delete. A successful form submission means the database received it; email notifications are not configured.
+- `/dashboard/messages`: read private contact enquiries, mark read/unread, filter unread, paginate, reply through your email app, and delete. A successful form submission means the database received it. FormSubmit also requests an email notification; the recipient must activate the form once. Failed notifications do not erase saved enquiries.
 - Public guestbook: database-backed text comments; anonymous image uploads are disabled to prevent storage abuse. No fake browser-only delivery. Comment changes use Supabase Realtime.
 
 Messages are submitted through a validated RPC; anonymous users have no table read access. A server-side limit allows five contact messages per sender email per hour. The honeypot and email limit are basic spam controls, not a full bot protection service.

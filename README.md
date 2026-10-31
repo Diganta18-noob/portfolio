@@ -35,7 +35,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-public-publishable-key
 
 Apply [supabase/setup.sql](supabase/setup.sql), optionally add your projects using [supabase/seed.sql](supabase/seed.sql), and create your admin account using [BACKEND-SETUP.md](BACKEND-SETUP.md). Restart Vite after updating environment variables.
 
-Private messages are stored in the admin inbox. Replies open in your email application; automatic email notifications are not configured.
+Private messages are saved in the admin inbox, then FormSubmit forwards an email notification to the configured owner address. Activate the recipient once using the FormSubmit email. If email fails, the saved enquiry stays in the inbox. Replies open in your email application.
 
 ## Personal content
 

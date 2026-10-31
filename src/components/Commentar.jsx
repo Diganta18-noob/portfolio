@@ -1,7 +1,8 @@
 import {useCallback, useEffect, useState} from 'react';
 import {MessageCircle, Pin, Send} from 'lucide-react';
 import {supabase,isBackendConfigured} from '../supabase';
-import {checked} from '../services/backend';
+import {checked,fetchPublicComments} from '../services/backend';
+import {portfolioConfig} from '../portfolioConfig';
 
 export default function Komentar() {
   const [comments,setComments] = useState([]);
@@ -13,7 +14,7 @@ export default function Komentar() {
   const refresh = useCallback(async () => {
     if (!isBackendConfigured) return;
     try {
-      setComments(await checked(supabase.from('portfolio_comments').select('*').order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(50)) || []);
+      setComments(await fetchPublicComments(supabase,portfolioConfig.guestbook?.excludedCommentIds));
     } catch { setError('Unable to load comments. Please try again.'); }
   },[]);
   useEffect(() => {
@@ -25,11 +26,12 @@ export default function Komentar() {
   const post = async e => {
     e.preventDefault();
     if (busy || !isBackendConfigured) return;
+    const formElement = e.currentTarget;
     setBusy(true); setError(''); setStatus('');
     try {
       if (!name.trim() || !content.trim()) throw new Error('Enter your name and comment.');
       await checked(supabase.from('portfolio_comments').insert({user_name:name.trim(),content:content.trim(),profile_image:null,is_pinned:false}));
-      setName(''); setContent(''); e.target.reset();
+      setName(''); setContent(''); formElement.reset();
       setStatus('Your public comment was posted.'); await refresh();
     } catch(error) { setError(error.message || 'Unable to post. Your text has been kept.'); }
     finally { setBusy(false); }
@@ -38,9 +40,9 @@ export default function Komentar() {
     <h2 className="text-2xl font-semibold flex gap-3 items-center"><MessageCircle className="text-indigo-400" />Public Guestbook</h2>
     <p className="text-gray-400 mt-3">Comments here are public. Use the contact form above for private enquiries.</p>
     {!isBackendConfigured ? <p className="text-gray-400 mt-4">The guestbook will be available when the portfolio backend is connected.</p> : <>
-      <form onSubmit={post} className="space-y-4 mt-6">
-        <label className="block">Name<input aria-label="Guestbook name" required maxLength={80} value={name} onChange={e=>setName(e.target.value)} className="block w-full mt-2 rounded-xl border border-white/10 bg-black/20 p-3" /></label>
-        <label className="block">Comment<textarea aria-label="Public comment" required maxLength={2000} value={content} onChange={e=>setContent(e.target.value)} className="block w-full mt-2 rounded-xl border border-white/10 bg-black/20 p-3" /></label>
+      <form onSubmit={post} onInvalid={() => setStatus('')} className="space-y-4 mt-6">
+        <label className="block">Name<input aria-label="Guestbook name" required maxLength={80} value={name} onChange={e=>{setName(e.target.value);setStatus('');}} className="block w-full mt-2 rounded-xl border border-white/10 bg-black/20 p-3" /></label>
+        <label className="block">Comment<textarea aria-label="Public comment" required maxLength={2000} value={content} onChange={e=>{setContent(e.target.value);setStatus('');}} className="block w-full mt-2 rounded-xl border border-white/10 bg-black/20 p-3" /></label>
         <button disabled={busy} className="flex items-center gap-2 bg-indigo-600 rounded-xl px-5 py-3 disabled:opacity-50"><Send size={16} />{busy?'Posting...':'Post Comment'}</button>
       </form>
       {error && <p role="alert" className="text-red-300 mt-4">{error} <button onClick={refresh} className="underline">Refresh comments</button></p>}

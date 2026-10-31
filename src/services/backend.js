@@ -54,3 +54,36 @@ export async function uploadPortfolioImage(client, bucket, file) {
   await checked(storage.upload(path,file,{contentType:file.type,upsert:false}));
   return storage.getPublicUrl(path).data.publicUrl;
 }
+
+// Store the enquiry first. An email-provider failure must never lose a saved message.
+export async function submitContactWithNotification(client, form, {recipient, fetchImpl = globalThis.fetch} = {}) {
+  await submitMessage(client, form);
+  if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+    return {saved:true,notification:'unavailable'};
+  }
+  try {
+    const response = await fetchImpl(`https://formsubmit.co/ajax/${encodeURIComponent(recipient)}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      referrerPolicy:'origin',
+      body:JSON.stringify({
+        name:form.name.trim(), email:form.email.trim(), message:form.message.trim(),
+        _replyto:form.email.trim(), _subject:'New portfolio enquiry — diganta.tech',
+        _template:'table', _captcha:'false',
+      }),
+      signal:AbortSignal.timeout(15000),
+    });
+    const data = await response.json();
+    if (!response.ok || (data.success !== true && data.success !== 'true')) {
+      return {saved:true,notification:/needs activation/i.test(data.message || '') ? 'activation_required' : 'unavailable'};
+    }
+    return {saved:true,notification:'accepted'};
+  } catch {
+    return {saved:true,notification:'unavailable'};
+  }
+}
+
+export async function fetchPublicComments(client, excludedIds = []) {
+  const comments = await checked(client.from('portfolio_comments').select('*').order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(50));
+  return (comments || []).filter(comment => !excludedIds.includes(comment.id));
+}

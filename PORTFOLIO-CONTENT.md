@@ -4,6 +4,6 @@ Personal details were adapted from D:/Antigravity/Portfolio/index.html and C:/An
 
 Edit src/portfolioConfig.js to update your bio, links, projects, or experience. The original sample certificates and comments have been removed. Project title graphics are illustrations, not screenshots.
 
-Without backend settings, the contact form opens an email draft. With Supabase configured, messages are stored privately in the admin inbox. See BACKEND-SETUP.md for setup and verification.
+Without backend settings, the contact form opens an email draft. With Supabase configured, messages are stored privately in the admin inbox and forwarded through FormSubmit after recipient activation. See BACKEND-SETUP.md for setup and verification.
 
 No resume was supplied; Request Resume opens an email request. The source gives December 2025 as the start month, so the site displays that month rather than an unverified number of years.
