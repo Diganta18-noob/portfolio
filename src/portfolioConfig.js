@@ -1,5 +1,5 @@
 // Personal content adapted from your earlier portfolio projects.
-// Add a resumeLink or verified certificates here when available.
+// Update the resume path and certificates here when needed.
 export const portfolioConfig = {
   // One imported demo record is excluded until the database cleanup is applied.
   "guestbook": {"excludedCommentIds": ["e2b8bdfe-9b86-4580-9541-2a36face2d12"]},
@@ -7,7 +7,7 @@ export const portfolioConfig = {
     "name": "Diganta Biswas",
     "role": "MERN Stack Developer",
     "email": "digantab.cse.jisu21@gmail.com",
-    "resumeLink": "",
+    "resumeLink": "/resume/Diganta-Biswas-Resume.pdf",
     "profileImage": "/diganta-profile.jpg",
     "location": "Kolkata, India",
     "aboutQuote": "Thoughtful interfaces. Reliable systems. Built from end to end.",

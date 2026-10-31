@@ -276,13 +276,13 @@ const AboutPage = () => {
       </div>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
-              <a href={portfolioConfig.personalInfo.resumeLink || `mailto:${portfolioConfig.personalInfo.email}?subject=Resume%20request`} className="w-full lg:w-auto" target="_blank" rel="noopener noreferrer">
+              <a href={portfolioConfig.personalInfo.resumeLink || `mailto:${portfolioConfig.personalInfo.email}?subject=Resume%20request`} download={portfolioConfig.personalInfo.resumeLink ? "Diganta-Biswas-Resume.pdf" : undefined} className="w-full lg:w-auto">
               <button
                 data-aos="fade-up"
                 data-aos-duration="800"
                 className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl "
               >
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> Request Resume
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> {portfolioConfig.personalInfo.resumeLink ? "Download Resume" : "Request Resume"}
               </button>
               </a>
               <a href="#Portofolio" className="w-full lg:w-auto">
