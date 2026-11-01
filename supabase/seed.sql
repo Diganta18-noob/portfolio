@@ -1,17 +1,4 @@
--- Optional: seed your real projects without overwriting existing entries. Run after setup.sql.
-insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index)
-select 'Thoughts Whatever','A digital home for Bengali literature and documentary storytelling, with editorial publishing tools and a multilingual reading experience.','/project-thoughts-whatever.svg','https://www.thoughtswhatever.in','https://github.com/Diganta18-noob/Thoughts-Whatever','["Next.js","TypeScript","Full stack","Editorial CMS"]'::jsonb,'[]'::jsonb,true,1
-where not exists(select 1 from public.projects where "Title"='Thoughts Whatever');
-
-insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index)
-select 'DogCart','A MERN e-commerce application with a responsive interface, shopping cart controls, and product catalog management.','/project-dogcart.svg','','https://github.com/Diganta18-noob/DogCart','["React","Redux","Node.js","Express","MongoDB"]'::jsonb,'[]'::jsonb,true,2
-where not exists(select 1 from public.projects where "Title"='DogCart');
-
-insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index)
-select 'Loanapp','A financial portal for loan applications, calculations, and repayment structures, with authentication and interactive dashboards.','/project-loanapp.svg','','https://github.com/Diganta18-noob/Loanapp','["React","Node.js","Express","MongoDB"]'::jsonb,'[]'::jsonb,true,3
-where not exists(select 1 from public.projects where "Title"='Loanapp');
-
-insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index)
-select 'Realtime Chat App','Real-time messaging with rooms, active status indicators, and instant delivery over WebSockets.','/project-realtime-chat.svg','','https://github.com/Diganta18-noob/Realtime-chat-app','["React","Socket.io","Node.js","Express","MongoDB"]'::jsonb,'[]'::jsonb,true,4
-where not exists(select 1 from public.projects where "Title"='Realtime Chat App');
-
+-- Selected projects. Adds missing records without overwriting existing content.
+insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index) select 'Thoughts Whatever','A Bengali literature and documentary publication with editorial publishing, Bengali-aware search, archives and reader bookmarks.','/project-thoughts-whatever.svg','https://www.thoughtswhatever.in','https://github.com/Diganta18-noob/Thoughts-Whatever','["Next.js","React","Prisma","PostgreSQL"]'::jsonb,'["Editorial publishing","Bengali-aware search","Archives and series","Reader bookmarks"]'::jsonb,true,1 where not exists(select 1 from public.projects where "Github"='https://github.com/Diganta18-noob/Thoughts-Whatever');
+insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index) select 'AddaDotCom','A café and restaurant management application with a PostgreSQL data layer and real-time Server-Sent Events.','/project-addadotcom.svg','https://addadotcom.vercel.app','https://github.com/Diganta18-noob/Addadotcom','["Next.js","React","PostgreSQL","Prisma","SSE"]'::jsonb,'["Restaurant management","Real-time updates with SSE","Prisma data layer"]'::jsonb,true,2 where not exists(select 1 from public.projects where "Github"='https://github.com/Diganta18-noob/Addadotcom');
+insert into public.projects ("Title","Description","Img","Link","Github","TechStack","Features",is_published,order_index) select 'Campus Management','A full-stack campus platform for departments, users, attendance and learner performance, with role-based access and bulk student imports.','/project-campus-management.svg','https://campusmanagement.vercel.app','https://github.com/Diganta18-noob/New-Campus-Management','["React","Node.js","Express","MongoDB","Redux Toolkit","MUI"]'::jsonb,'["Six-role access control","Department and user management","Excel and CSV student imports","Attendance history and learner reports"]'::jsonb,true,3 where not exists(select 1 from public.projects where "Github"='https://github.com/Diganta18-noob/New-Campus-Management');

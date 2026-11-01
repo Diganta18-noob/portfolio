@@ -1,0 +1,67 @@
+[
+  {
+    "Title": "Thoughts Whatever",
+    "Description": "A Bengali literature and documentary publication with editorial publishing, Bengali-aware search, archives and reader bookmarks.",
+    "TechStack": [
+      "Next.js",
+      "React",
+      "Prisma",
+      "PostgreSQL"
+    ],
+    "Features": [
+      "Editorial publishing",
+      "Bengali-aware search",
+      "Archives and series",
+      "Reader bookmarks"
+    ],
+    "Link": "https://www.thoughtswhatever.in",
+    "Github": "https://github.com/Diganta18-noob/Thoughts-Whatever",
+    "Img": "/project-thoughts-whatever.svg",
+    "is_published": true,
+    "order_index": 1
+  },
+  {
+    "Title": "AddaDotCom",
+    "Description": "A café and restaurant management application with a PostgreSQL data layer and real-time Server-Sent Events.",
+    "TechStack": [
+      "Next.js",
+      "React",
+      "PostgreSQL",
+      "Prisma",
+      "SSE"
+    ],
+    "Features": [
+      "Restaurant management",
+      "Real-time updates with SSE",
+      "Prisma data layer"
+    ],
+    "Link": "https://addadotcom.vercel.app",
+    "Github": "https://github.com/Diganta18-noob/Addadotcom",
+    "Img": "/project-addadotcom.svg",
+    "is_published": true,
+    "order_index": 2
+  },
+  {
+    "Title": "Campus Management",
+    "Description": "A full-stack campus platform for departments, users, attendance and learner performance, with role-based access and bulk student imports.",
+    "TechStack": [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "Redux Toolkit",
+      "MUI"
+    ],
+    "Features": [
+      "Six-role access control",
+      "Department and user management",
+      "Excel and CSV student imports",
+      "Attendance history and learner reports"
+    ],
+    "Link": "https://campusmanagement.vercel.app",
+    "Github": "https://github.com/Diganta18-noob/New-Campus-Management",
+    "Img": "/project-campus-management.svg",
+    "is_published": true,
+    "order_index": 3
+  }
+]

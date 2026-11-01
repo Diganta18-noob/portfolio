@@ -1,8 +1,9 @@
-// Personal content adapted from your earlier portfolio projects.
-// Update the resume path and certificates here when needed.
 export const portfolioConfig = {
-  // One imported demo record is excluded until the database cleanup is applied.
-  "guestbook": {"excludedCommentIds": ["e2b8bdfe-9b86-4580-9541-2a36face2d12"]},
+  "guestbook": {
+    "excludedCommentIds": [
+      "e2b8bdfe-9b86-4580-9541-2a36face2d12"
+    ]
+  },
   "personalInfo": {
     "name": "Diganta Biswas",
     "role": "MERN Stack Developer",
@@ -58,74 +59,72 @@ export const portfolioConfig = {
   ],
   "staticProjects": [
     {
-      "id": "thoughts-whatever",
       "Title": "Thoughts Whatever",
-      "Description": "A digital home for Bengali literature and documentary storytelling, with editorial publishing tools and a multilingual reading experience.",
+      "Description": "A Bengali literature and documentary publication with editorial publishing, Bengali-aware search, archives and reader bookmarks.",
       "TechStack": [
         "Next.js",
-        "TypeScript",
-        "Full stack",
-        "Editorial CMS"
+        "React",
+        "Prisma",
+        "PostgreSQL"
+      ],
+      "Features": [
+        "Editorial publishing",
+        "Bengali-aware search",
+        "Archives and series",
+        "Reader bookmarks"
       ],
       "Link": "https://www.thoughtswhatever.in",
       "Github": "https://github.com/Diganta18-noob/Thoughts-Whatever",
       "Img": "/project-thoughts-whatever.svg",
-      "Features": [],
       "is_published": true,
-      "order_index": 1
+      "order_index": 1,
+      "id": "thoughts-whatever"
     },
     {
-      "id": "dogcart",
-      "Title": "DogCart",
-      "Description": "A MERN e-commerce application with a responsive interface, shopping cart controls, and product catalog management.",
+      "Title": "AddaDotCom",
+      "Description": "A café and restaurant management application with a PostgreSQL data layer and real-time Server-Sent Events.",
       "TechStack": [
+        "Next.js",
         "React",
-        "Redux",
-        "Node.js",
-        "Express",
-        "MongoDB"
+        "PostgreSQL",
+        "Prisma",
+        "SSE"
       ],
-      "Link": "",
-      "Github": "https://github.com/Diganta18-noob/DogCart",
-      "Img": "/project-dogcart.svg",
-      "Features": [],
+      "Features": [
+        "Restaurant management",
+        "Real-time updates with SSE",
+        "Prisma data layer"
+      ],
+      "Link": "https://addadotcom.vercel.app",
+      "Github": "https://github.com/Diganta18-noob/Addadotcom",
+      "Img": "/project-addadotcom.svg",
       "is_published": true,
-      "order_index": 2
+      "order_index": 2,
+      "id": "addadotcom"
     },
     {
-      "id": "loanapp",
-      "Title": "Loanapp",
-      "Description": "A financial portal for loan applications, calculations, and repayment structures, with authentication and interactive dashboards.",
+      "Title": "Campus Management",
+      "Description": "A full-stack campus platform for departments, users, attendance and learner performance, with role-based access and bulk student imports.",
       "TechStack": [
         "React",
         "Node.js",
         "Express",
-        "MongoDB"
+        "MongoDB",
+        "Redux Toolkit",
+        "MUI"
       ],
-      "Link": "",
-      "Github": "https://github.com/Diganta18-noob/Loanapp",
-      "Img": "/project-loanapp.svg",
-      "Features": [],
-      "is_published": true,
-      "order_index": 3
-    },
-    {
-      "id": "realtime-chat",
-      "Title": "Realtime Chat App",
-      "Description": "Real-time messaging with rooms, active status indicators, and instant delivery over WebSockets.",
-      "TechStack": [
-        "React",
-        "Socket.io",
-        "Node.js",
-        "Express",
-        "MongoDB"
+      "Features": [
+        "Six-role access control",
+        "Department and user management",
+        "Excel and CSV student imports",
+        "Attendance history and learner reports"
       ],
-      "Link": "",
-      "Github": "https://github.com/Diganta18-noob/Realtime-chat-app",
-      "Img": "/project-realtime-chat.svg",
-      "Features": [],
+      "Link": "https://campusmanagement.vercel.app",
+      "Github": "https://github.com/Diganta18-noob/New-Campus-Management",
+      "Img": "/project-campus-management.svg",
       "is_published": true,
-      "order_index": 4
+      "order_index": 3,
+      "id": "campus-management"
     }
   ],
   "staticCertificates": [],
