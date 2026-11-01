@@ -1,3 +1,4 @@
+import {confirmAction, notify} from '../../services/feedback';
 import { useEffect, useState } from 'react'
 import { checked, uploadPortfolioImage, validateImage } from "../../services/backend";
 import { supabase } from "../../supabase";
@@ -76,7 +77,7 @@ export default function Certificates() {
 
   const handleFile = (f) => {
     if (!f) return
-    try { validateImage(f) } catch(error) { setError(error.message); return }
+    try { validateImage(f) } catch(error) { setError(error.message); notify(error.message, 'error'); return }
     setFile(f)
     setPreview(URL.createObjectURL(f))
   }
@@ -88,13 +89,13 @@ export default function Certificates() {
       const url = await uploadPortfolioImage(supabase,'certificate-images',file);
       await checked(supabase.from('certificates').insert({Img:url}).select('id').single());
       setFile(null); setPreview(null); await fetchCerts();
-    } catch(error) { setError(error.message); }
+    } catch(error) { setError(error.message); notify(error.message, 'error'); }
     finally { setUploading(false); }
   };
   const deleteCert = async (id) => {
-    if (!confirm('Delete this certificate?')) return;
-    try { await checked(supabase.from('certificates').delete().eq('id',id).select('id').single()); await fetchCerts(); }
-    catch(error) { setError(error.message); }
+    if (!await confirmAction('Delete this certificate?')) return;
+    try { await checked(supabase.from('certificates').delete().eq('id',id).select('id').single()); notify('Deleted successfully.'); await fetchCerts(); }
+    catch(error) { setError(error.message); notify(error.message, 'error'); }
   };
 
   return (

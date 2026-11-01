@@ -1,3 +1,4 @@
+import {track} from '../services/analytics';
 import { loadPublicPortfolio } from "../services/portfolio";
 import { portfolioConfig } from "../portfolioConfig";
 import React, { useEffect, useState } from "react";
@@ -135,7 +136,7 @@ const ProjectDetails = () => {
     loadPublicPortfolio().then(({projects}) => {
       if (!active) return;
       const selectedProject = projects.find(p => toSlug(p.Title) === slug);
-      if (selectedProject) setProject({...selectedProject,Features:selectedProject.Features || [],TechStack:selectedProject.TechStack || [],Github:selectedProject.Github || ''});
+      if (selectedProject) {track('project_view',String(selectedProject.id)); setProject({...selectedProject,Features:selectedProject.Features || [],TechStack:selectedProject.TechStack || [],Github:selectedProject.Github || ''});}
     }).catch(() => { if (active) setLoadError('Unable to load this project. Please try again.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active=false; };
@@ -248,6 +249,8 @@ const ProjectDetails = () => {
                 <div className="flex flex-wrap gap-3 md:gap-4">
                   <a
                     href={project.Link || project.Github}
+                    data-project-link="true"
+                    onClick={()=>track(project.Link?'project_demo_click':'project_source_click',String(project.id))}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-purple-600/20 text-blue-300 rounded-xl transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
@@ -259,11 +262,12 @@ const ProjectDetails = () => {
 
                   <a
                     href={project.Github}
+                    data-project-link="true"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-purple-600/10 to-pink-600/10 hover:from-purple-600/20 hover:to-pink-600/20 text-purple-300 rounded-xl transition-all duration-300 border border-purple-500/20 hover:border-purple-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
                     onClick={(e) =>
-                      !handleGithubClick(project.Github) && e.preventDefault()
+                      handleGithubClick(project.Github) ? track('project_source_click',String(project.id)) : e.preventDefault()
                     }
                   >
                     <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-purple-600/10 to-pink-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />

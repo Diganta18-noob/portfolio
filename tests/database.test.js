@@ -62,3 +62,20 @@ test('admin setup requires an existing Auth user and is safe to rerun',async()=>
     assert.deepEqual(result.rows,[{role:'admin'}]);
   }finally{await db.close();}
 });
+
+test('analytics migration is repeatable, deduplicates events and denies public reads',async()=>{
+ const db=await fixture();try{
+ await db.exec(setup);
+ const migration=fs.readFileSync(new URL('../supabase/analytics-workflows.sql',import.meta.url),'utf8');
+ await db.exec(migration);await db.exec(migration);
+ await db.exec('set role anon');
+ const call="select public.record_portfolio_event('11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','page_view','/',null)";
+ await db.exec(call);await db.exec(call);
+ await assert.rejects(db.query('select * from public.analytics_events'),/permission denied/);
+ await assert.rejects(db.exec("select public.record_portfolio_event(gen_random_uuid(),gen_random_uuid(),'page_view','/login',null)"),/Invalid event/);
+ await db.exec('reset role');
+ assert.equal((await db.query('select count(*)::int as n from public.analytics_events')).rows[0].n,1);
+ }finally{await db.close();}
+});
+
+test('content publishing saves revisions, public reads only published bio, audit has no message body',async()=>{const db=await fixture();try{await db.exec(setup);const sql=fs.readFileSync(new URL('../supabase/content-reports-audit.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);await db.exec("insert into auth.users(id) values('11111111-1111-4111-8111-111111111111');insert into public.profiles(id,username,role) values('11111111-1111-4111-8111-111111111111','owner','admin');set role authenticated;select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);select public.publish_portfolio_bio('First biography');select public.publish_portfolio_bio('Second biography');");assert.equal((await db.query('select count(*)::int n from public.site_content_versions')).rows[0].n,2);assert.equal((await db.query('select count(*)::int n from public.admin_audit_events')).rows[0].n,2);await db.exec("reset role;select set_config('request.jwt.claim.sub','',false);set role anon;");assert.equal((await db.query('select bio from public.site_content')).rows[0].bio,'Second biography');await assert.rejects(db.query('select * from public.site_content_versions'),/permission denied/);await db.exec('reset role;set role authenticated');await assert.rejects(db.exec("select public.publish_portfolio_bio('Unauthorized')"),/Admin access required/);}finally{await db.close();}});

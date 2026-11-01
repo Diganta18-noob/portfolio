@@ -1,3 +1,4 @@
+import {confirmAction, notify} from '../../services/feedback';
 import { useEffect, useState, useMemo } from "react";
 import { checked } from "../../services/backend";
 import { supabase } from "../../supabase";
@@ -38,7 +39,7 @@ export default function Comments() {
     setLoading(true); setError('');
     try {
       setComments(await checked(supabase.from('portfolio_comments').select('*').order('is_pinned',{ascending:false}).order('created_at',{ascending:false})) || []);
-    } catch(error) { setError(error.message); }
+    } catch(error) { setError(error.message); notify(error.message, 'error'); }
     finally { setLoading(false); }
   };
 
@@ -53,12 +54,12 @@ export default function Comments() {
 
   const pin = async (id,value) => {
     try { await checked(supabase.from('portfolio_comments').update({is_pinned:value}).eq('id',id).select('id').single()); await fetchComments(); }
-    catch(error) { setError(error.message); }
+    catch(error) { setError(error.message); notify(error.message, 'error'); }
   };
   const remove = async (id) => {
-    if (!confirm('Delete this comment?')) return;
-    try { await checked(supabase.from('portfolio_comments').delete().eq('id',id).select('id').single()); await fetchComments(); }
-    catch(error) { setError(error.message); }
+    if (!await confirmAction('Delete this comment?')) return;
+    try { await checked(supabase.from('portfolio_comments').delete().eq('id',id).select('id').single()); notify('Deleted successfully.'); await fetchComments(); }
+    catch(error) { setError(error.message); notify(error.message, 'error'); }
   };
 
   const pinnedCount = comments.filter((c) => c.is_pinned).length;
@@ -278,6 +279,7 @@ export default function Comments() {
                       )}
                     </button>
                     <button
+                      aria-label="Delete comment"
                       onClick={() => remove(comment.id)}
                       className="p-2 rounded-lg border border-white/10 text-gray-500 hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/5 transition-all duration-200"
                     >
