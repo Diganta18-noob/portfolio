@@ -10,4 +10,25 @@ export async function runReport(env,fetchImpl=fetch,now=new Date()){
  const response=await fetchImpl('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'portfolio-daily-'+window.day},body:JSON.stringify({from:env.REPORT_FROM,to:[env.REPORT_TO],subject:`Portfolio daily report — ${window.day}`,text:`Diganta portfolio report\nReporting day: ${window.day} (Asia/Kolkata)\n\nNew saved enquiries: ${enquiries}\nObserved opted-in events: ${events}\nCurrent unread enquiries (all time): ${unread}\n\nEvents are untrusted observations and do not represent unique visitors. Unread is a current snapshot, not a historical count.\nOpen workspace: https://www.diganta.tech/dashboard/overview`}),signal:AbortSignal.timeout(15000)});
  if(!response.ok)throw new Error('Email provider rejected report');const payload=await response.json();if(!payload.id)throw new Error('Email acknowledgement missing');return {accepted:true,day:window.day};
 }
-export default async function handler(req,res){res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});if(!authorized(req.headers.authorization,process.env.CRON_SECRET))return res.status(401).json({error:'Unauthorized'});try{return res.status(200).json(await runReport(process.env));}catch{return res.status(502).json({error:'Report could not be completed. Check server configuration and provider logs.'});}}
+
+export function reportFailureCode(error){
+ const codes={'Report configuration incomplete':'configuration_incomplete','Report data unavailable':'database_request_failed','Report count unavailable':'database_count_missing','Email provider rejected report':'provider_rejected','Email acknowledgement missing':'provider_acknowledgement_missing'};
+ return codes[error?.message]||'unexpected_failure';
+}
+export default async function handler(req,res){
+ res.setHeader('Cache-Control','no-store');
+ if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+ if(!authorized(req.headers.authorization,process.env.CRON_SECRET)){
+   console.warn(JSON.stringify({job:'portfolio-daily-report',outcome:'unauthorized'}));
+   return res.status(401).json({error:'Unauthorized'});
+ }
+ try{
+   const result=await runReport(process.env);
+   console.info(JSON.stringify({job:'portfolio-daily-report',outcome:result.skipped?'disabled':'provider_accepted',day:result.day||null}));
+   return res.status(200).json({...result,outcome:result.skipped?'disabled':'provider_accepted'});
+ }catch(error){
+   const code=reportFailureCode(error);
+   console.error(JSON.stringify({job:'portfolio-daily-report',outcome:'failed',code}));
+   return res.status(502).json({error:'Report could not be completed.',code});
+ }
+}
