@@ -1,77 +1,146 @@
-function readTheme(){try{return localStorage.getItem('workspace-theme')||'dark';}catch{return 'dark';}}
-import { useEffect, useRef, useState } from 'react';
-import { Routes, Route, NavLink, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
-import Projects from './dashboard/Projects';
 import AdminFeedback from '../components/AdminFeedback';
-import Overview from './dashboard/Overview';
-import Reports from './dashboard/Reports';
-import Analytics from './dashboard/Analytics';
-import Settings from './dashboard/Settings';
-import Content from './dashboard/Content';
-import Audit from './dashboard/Audit';
-import Certificates from './dashboard/Certificates';
-import Comments from './dashboard/Comments';
-import Messages from './dashboard/Messages';
-import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, X, ArrowUpRight } from 'lucide-react';
+import { useState } from 'react'
+import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
+import Projects from './dashboard/Projects'
+import Certificates from './dashboard/Certificates'
+import Comments from './dashboard/Comments'
+import Messages from './dashboard/Messages'
+import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu } from 'lucide-react'
 
-const items = [
-  ['overview', 'Overview', LayoutDashboard],
-  ['reports', 'Reports', LayoutDashboard],
-  ['analytics', 'Analytics', LayoutDashboard],
-  ['settings', 'Settings', LayoutDashboard],
-  ['content', 'Content studio', LayoutDashboard],
-  ['audit', 'Audit history', LayoutDashboard],
-  ['projects', 'Projects', FolderGit2],
-  ['messages', 'Inbox', MessageSquare],
-  ['certificates', 'Certificates', Award],
-  ['comments', 'Guestbook', MessageSquare],
-];
+const NAV_ITEMS = [
+  { to: 'messages', label: 'Private Messages', icon: MessageSquare },
+  { to: 'projects', label: 'Projects', icon: FolderGit2 },
+  { to: 'certificates', label: 'Certificates', icon: Award },
+  { to: 'comments', label: 'Comments', icon: MessageSquare },
+]
 
 export default function Dashboard() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState('');
-  const trigger = useRef(null);
-  const drawer = useRef(null);
-  const title = items.find(([path]) => location.pathname.split('/').includes(path))?.[1] || 'Overview';
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.activeElement;
-    drawer.current?.querySelector('button')?.focus();
-    function keyboard(event) {
-      if (event.key === 'Escape') setOpen(false);
-      if (event.key === 'Tab') {
-        const nodes = [...drawer.current.querySelectorAll('a, button')];
-        const first = nodes[0], last = nodes[nodes.length - 1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-      }
-    }
-    document.addEventListener('keydown', keyboard);
-    return () => { document.removeEventListener('keydown', keyboard); previous?.focus(); };
-  }, [open]);
-  async function logout() {
-    const result = await supabase.auth.signOut();
-    if (result.error) setError(result.error.message);
-    else navigate('/login', { replace: true });
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [error,setError] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      const {error} = await supabase.auth.signOut();
+      if(error) throw error;
+      navigate('/login',{replace:true});
+    } catch(error) { setError(error.message); }
   }
-  function navigation(mobile = false) {
-    return <>
-      <div className="workspace-brand"><img src="/favicon.svg" alt="" width="36" height="36"/><div><strong>Diganta</strong><span>Portfolio workspace</span></div>{mobile && <button aria-label="Close navigation" onClick={() => setOpen(false)}><X size={20}/></button>}</div>
-      <p className="workspace-label">Workspace</p>
-      <nav aria-label="Admin navigation">{items.map(([path, label, Icon]) => <NavLink key={path} to={`/dashboard/${path}`} onClick={() => setOpen(false)} className={({isActive}) => `workspace-nav ${isActive ? 'is-active' : ''}`}><Icon size={18}/>{label}</NavLink>)}</nav>
-      <div className="workspace-sidebar-footer"><Link to="/">View website <ArrowUpRight size={16}/></Link><button onClick={logout}><LogOut size={16}/>Sign out</button></div>
-    </>;
-  }
-  return <div className="admin-workspace workspace-shell" data-theme={readTheme()}>
-    <AdminFeedback/><aside className="workspace-sidebar">{navigation()}</aside>
-    {open && <div className="workspace-overlay" onClick={() => setOpen(false)}><aside ref={drawer} role="dialog" aria-modal="true" aria-label="Navigation" className="workspace-drawer" onClick={event => event.stopPropagation()}>{navigation(true)}</aside></div>}
-    <div className="workspace-body"><header className="workspace-header"><div className="flex items-center gap-3"><button ref={trigger} className="workspace-menu" aria-label="Open navigation" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={20}/></button><span className="text-gray-500">Workspace /</span><strong>{title}</strong></div><Link to="/" className="workspace-website">View website <ArrowUpRight size={16}/></Link></header>
-      <main id="admin-main" className="workspace-main">{error && <p role="alert" className="text-red-600 mb-4">{error}</p>}<Routes>
-        <Route index element={<Navigate to="overview" replace/>}/><Route path="overview" element={<Overview/>}/><Route path="reports" element={<Reports/>}/><Route path="analytics" element={<Analytics/>}/><Route path="settings" element={<Settings/>}/><Route path="content" element={<Content/>}/><Route path="audit" element={<Audit/>}/><Route path="projects" element={<Projects/>}/><Route path="messages" element={<Messages/>}/><Route path="certificates" element={<Certificates/>}/><Route path="comments" element={<Comments/>}/><Route path="*" element={<Navigate to="overview" replace/>}/>
-      </Routes></main>
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full p-5 gap-6">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-1 shrink-0">
+        <div className="relative">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-xl blur opacity-50" />
+          <div className="relative w-9 h-9 bg-[#030014] rounded-xl border border-white/15 flex items-center justify-center">
+            <LayoutDashboard className="w-4 h-4 text-indigo-400" />
+          </div>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white">Dashboard</p>
+          <p className="text-xs text-gray-500">Admin Panel</p>
+        </div>
+      </div>
+
+      {/* Badge */}
+      <div className="shrink-0 px-3 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+        <span className="text-indigo-300 text-xs font-medium">Portfolio Manager</span>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex flex-col gap-1 flex-1 min-h-0">
+        <p className="text-[10px] text-gray-600 uppercase tracking-widest px-3 mb-2 shrink-0">Menu</p>
+        {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+          const active = location.pathname.includes(to)
+          return (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium shrink-0 ${
+                active
+                  ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/15 border border-indigo-500/30 text-white'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-indigo-400' : ''}`} />
+              {label}
+              {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/15 transition-all duration-200 text-sm"
+      >
+        <LogOut className="w-4 h-4 shrink-0" />
+        Sign Out
+      </button>
     </div>
-  </div>;
+  )
+
+  return (
+    // Kunci: TIDAK pakai overflow-hidden di sini supaya scrollbar main bisa diklik
+    <div className="flex text-white" style={{ height: '100dvh' }}>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - desktop: sticky, tinggi 100dvh */}
+      <aside
+        className="hidden lg:flex w-60 shrink-0 flex-col border-r border-white/8 bg-white/3 backdrop-blur-xl"
+        style={{ height: '100dvh', position: 'sticky', top: 0 }}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Sidebar - mobile drawer */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-60 flex flex-col border-r border-white/8 bg-[#0a0a1a] backdrop-blur-xl transition-transform duration-300 lg:hidden ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        {/* Mobile topbar */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-white/3 backdrop-blur-xl shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white transition-colors"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+          <span className="text-sm font-medium text-white">Dashboard</span>
+        </div>
+
+        {/* Hanya main yang overflow-y-auto — scrollbar bisa diklik normal */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {error && <p role="alert" className="text-red-300">{error}</p>}
+          <Link to="/" className="inline-block mb-5 text-indigo-300 text-sm hover:underline">View portfolio</Link>
+          <AdminFeedback/><Routes>
+            <Route index element={<Navigate to="projects" replace />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="certificates" element={<Certificates />} />
+            <Route path="comments" element={<Comments />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="*" element={<Navigate to="projects" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
+  )
 }

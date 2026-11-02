@@ -3,7 +3,6 @@ import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
 import { supabase, isBackendConfigured } from "../supabase";
 import { submitContactWithNotification } from "../services/backend";
 import Komentar from "../components/Commentar";
-import {track} from "../services/analytics";
 import SocialLinks from "../components/SocialLinks";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -28,7 +27,6 @@ const ContactPage = () => {
 
   const handleChange = (e) => {
     setStatus(''); setError('');
-    if(!formData.name && !formData.email && !formData.message) track('contact_start');
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -51,7 +49,6 @@ const ContactPage = () => {
     setIsSubmitting(true);
     try {
       const result = await submitContactWithNotification(supabase,formData,{recipient:portfolioConfig.personalInfo.email});
-      track('contact_submit_success');
       setStatus(result.notification === 'accepted'
         ? 'Your message has been received. Thank you for getting in touch!'
         : 'Your message was saved to my private inbox. The email notification is temporarily unavailable.');

@@ -215,7 +215,7 @@ const ProjectForm = ({
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     if (!f) return;
-    try { validateImage(f); } catch (error) { notify(error.message, 'error'); return; }
+    try { validateImage(f); } catch (error) { notify(error.message,'error'); return; }
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
@@ -342,8 +342,6 @@ const ProjectForm = ({
 
 export default function Projects() {
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('all');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -353,7 +351,7 @@ export default function Projects() {
   const fetchProjects = async () => {
     setLoading(true); setError('');
     try { setProjects(await checked(supabase.from('projects').select('*').order('created_at',{ascending:false})) || []); }
-    catch(error) { setError(error.message); notify(error.message, 'error'); }
+    catch(error) { setError(error.message); }
     finally { setLoading(false); }
   };
   useEffect(() => { fetchProjects(); }, []);
@@ -362,7 +360,6 @@ export default function Projects() {
     setUploading(true); setError('');
     try {
       if (!form.Title.trim()) throw new Error('Project title is required.');
-      for (const value of [form.Link, form.Github]) { if(value) { let url; try { url=new URL(value); } catch { throw new Error('Project links must be complete https:// URLs.'); } if(!['http:', 'https:'].includes(url.protocol)) throw new Error('Project links must use HTTP or HTTPS.'); } }
       const Img = file ? await uploadPortfolioImage(supabase,'project-images',file) : existing?.Img || '';
       const payload = {...form,Title:form.Title.trim(),Img,TechStack:form.TechStack.split(',').map(s=>s.trim()).filter(Boolean),Features:form.Features.split(',').map(s=>s.trim()).filter(Boolean)};
       const query = existing ? supabase.from('projects').update(payload).eq('id',existing.id) : supabase.from('projects').insert(payload);
@@ -375,8 +372,8 @@ export default function Projects() {
   const handleEdit = (form,file) => saveProject(form,file,editProject);
   const deleteProject = async (id) => {
     if (!await confirmAction('Delete this project?')) return;
-    try { await checked(supabase.from('projects').delete().eq('id',id).select('id').single()); notify('Deleted successfully.'); await fetchProjects(); }
-    catch(error) { setError(error.message); notify(error.message, 'error'); }
+    try { await checked(supabase.from('projects').delete().eq('id',id).select('id').single()); await fetchProjects(); }
+    catch(error) { setError(error.message); }
   };
 
   return (
@@ -438,8 +435,34 @@ export default function Projects() {
         </Modal>
       )}
 
-      <div className="flex gap-4 flex-wrap"><label className="flex-1">Search projects<input aria-label="Search projects" value={search} onChange={e=>setSearch(e.target.value)} className="block w-full bg-slate-800 border border-slate-600 rounded-lg p-3 mt-2" placeholder="Title or technology"/></label><label>Visibility<select value={status} onChange={e=>setStatus(e.target.value)} className="block bg-slate-800 border border-slate-600 rounded-lg p-3 mt-2"><option value="all">All projects</option><option value="published">Published</option><option value="draft">Drafts</option></select></label></div>
-      {loading ? <p role="status">Loading projects…</p> : <div className="overflow-x-auto border border-white/10 rounded-xl"><table className="w-full text-sm text-left"><caption className="sr-only">Portfolio project management</caption><thead className="bg-slate-800"><tr><th className="p-4">Project</th><th className="p-4">Visibility</th><th className="p-4">Technology</th><th className="p-4">Actions</th></tr></thead><tbody>{projects.filter(p=>(status==='all'||Boolean(p.is_published)===(status==='published')) && [p.Title,...(p.TechStack||[])].join(' ').toLowerCase().includes(search.toLowerCase())).map(project=><tr key={project.id} className="border-t border-white/10"><td className="p-4 font-medium">{project.Title}</td><td className="p-4"><span className="text-xs px-2 py-1 rounded bg-slate-700">{project.is_published?'Published':'Draft'}</span></td><td className="p-4 text-gray-400">{(project.TechStack||[]).join(' · ')}</td><td className="p-4"><div className="flex gap-4"><button className="text-indigo-300" onClick={()=>setEditProject(project)}>Edit</button><button className="text-red-300" onClick={()=>deleteProject(project.id)}>Delete</button></div></td></tr>)}</tbody></table>{!projects.length&&<p className="p-8 text-gray-400">No projects yet. Add your first project.</p>}</div>}
+      {/* Projects Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : projects.length === 0 ? (
+        <Card>
+          <div className="p-16 text-center">
+            <FolderGit2 className="w-10 h-10 text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">
+              No projects yet. Create your first one!
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onDelete={deleteProject}
+              onEdit={setEditProject}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
