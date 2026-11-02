@@ -35,3 +35,9 @@ Do not describe the entire master plan as complete while these items remain.
 - Browser tool failed before tab creation with missing kernel asset path, including after reset. Visual/interaction QA remains blocked; no visual pass claimed.
 - Fixed lint errors, separated feedback helpers for Fast Refresh, and added accessible delete-comment label.
 - Targeted lint now clean.
+
+## Scheduled report backend
+- Added cron-authenticated daily aggregate email endpoint, disabled by default.
+- Added Kolkata-day boundaries and date-based provider idempotency; no contact bodies sent.
+- 30 tests pass, including four scheduled-report tests.
+- Scheduler intentionally not registered until server credentials and verified sender are configured. See SCHEDULED-REPORT-SETUP.md.
