@@ -1,3 +1,5 @@
+import DataTable from '../../components/DataTable';
+import {validateProject,filterProjects} from '../../utils/projectUx';
 import {confirmAction, notify} from '../../services/feedback';
 import { useEffect, useState } from "react";
 import { checked, uploadPortfolioImage, validateImage } from "../../services/backend";
@@ -205,12 +207,17 @@ const ProjectForm = ({
     Github: initial?.Github || "",
     is_published: initial?.is_published ?? true,
   });
+  const [dirty,setDirty]=useState(false),[draftMessage,setDraftMessage]=useState(''),[savedDraft,setSavedDraft]=useState(null);
+  const draftKey='portfolio-project-draft-'+(initial?.id||'new');
+  useEffect(()=>{try{const raw=localStorage.getItem(draftKey);if(raw)setSavedDraft(JSON.parse(raw));}catch{/* Storage unavailable. */}},[draftKey]);
+  useEffect(()=>{if(!dirty)return;setDraftMessage('Saving local draft…');const timer=setTimeout(()=>{try{localStorage.setItem(draftKey,JSON.stringify(form));setDraftMessage('Draft saved on this browser. Images must be selected again.');}catch{setDraftMessage('Local draft unavailable. Keep this editor open until saved.');}},600);return()=>clearTimeout(timer);},[form,dirty,draftKey]);
+  const fieldErrors=validateProject(form);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(initial?.Img || null);
 
   useEffect(() => () => { if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview); }, [preview]);
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const set = (key) => (e) => {setDirty(true);setForm((f) => ({ ...f, [key]: e.target.value }));};
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -224,10 +231,14 @@ const ProjectForm = ({
     <form
       onSubmit={(e) => {
         e.preventDefault();
+        if(Object.keys(fieldErrors).length){notify(Object.values(fieldErrors)[0],'error');return;}
         onSubmit(form, file);
       }}
       className="p-5 sm:p-6 space-y-4"
     >
+      {savedDraft&&<div className="border border-indigo-500/30 rounded-lg p-3 text-sm">A saved draft is available. <button type="button" className="text-indigo-300 underline" onClick={()=>{setForm(f=>Object.fromEntries(Object.keys(f).map(key=>[key,typeof savedDraft[key]===typeof f[key]?savedDraft[key]:f[key]])));setDirty(true);setSavedDraft(null);}}>Restore draft</button> <button type="button" className="text-gray-400 underline ml-3" onClick={()=>{try{localStorage.removeItem(draftKey);}catch{/* Storage unavailable. */}setSavedDraft(null);}}>Discard draft</button></div>}
+      <p role="status" className="text-xs text-gray-400">{draftMessage||'Publishing happens only when you submit this form.'}</p>
+      {dirty&&Object.values(fieldErrors).map(message=><p key={message} className="text-sm text-amber-300">{message}</p>)}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <InputField
@@ -313,7 +324,7 @@ const ProjectForm = ({
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-gray-300 text-sm"><input type="checkbox" checked={form.is_published} onChange={e => setForm(f => ({...f,is_published:e.target.checked}))} /> Published on portfolio</label>
+      <label className="flex items-center gap-2 text-gray-300 text-sm"><input type="checkbox" checked={form.is_published} onChange={e => {setDirty(true);setForm(f => ({...f,is_published:e.target.checked}));}} /> Published on portfolio</label>
       <div className="flex justify-end gap-2 pt-1">
         <button
           type="button"
@@ -343,6 +354,7 @@ const ProjectForm = ({
 export default function Projects() {
   const [error, setError] = useState('');
   const [projects, setProjects] = useState([]);
+  const [search,setSearch]=useState(''),[visibility,setVisibility]=useState('all'),[view,setView]=useState('cards'),[selected,setSelected]=useState([]),[bulkBusy,setBulkBusy]=useState(false);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editProject, setEditProject] = useState(null);
@@ -359,11 +371,12 @@ export default function Projects() {
     if (uploading) return;
     setUploading(true); setError('');
     try {
-      if (!form.Title.trim()) throw new Error('Project title is required.');
+      const errors=validateProject(form);if(Object.keys(errors).length)throw new Error(Object.values(errors)[0]);
       const Img = file ? await uploadPortfolioImage(supabase,'project-images',file) : existing?.Img || '';
       const payload = {...form,Title:form.Title.trim(),Img,TechStack:form.TechStack.split(',').map(s=>s.trim()).filter(Boolean),Features:form.Features.split(',').map(s=>s.trim()).filter(Boolean)};
       const query = existing ? supabase.from('projects').update(payload).eq('id',existing.id) : supabase.from('projects').insert(payload);
       await checked(query.select('id').single());
+      try{localStorage.removeItem('portfolio-project-draft-'+(existing?.id||'new'));}catch{/* Local draft cleanup is best effort. */}
       setShowCreate(false); setEditProject(null); await fetchProjects();
     } catch(error) { setError(error.message || 'Unable to save project.'); }
     finally { setUploading(false); }
@@ -435,6 +448,8 @@ export default function Projects() {
         </Modal>
       )}
 
+      <div className="flex flex-wrap gap-3 items-end"><label className="flex-1 text-sm">Search projects<input value={search} onChange={e=>{setSearch(e.target.value);setSelected([]);}} className="block w-full bg-white/5 border border-white/15 rounded-lg p-3 mt-2" placeholder="Title or technology"/></label><label className="text-sm">Visibility<select value={visibility} onChange={e=>{setVisibility(e.target.value);setSelected([]);}} className="block bg-slate-900 border border-white/15 rounded-lg p-3 mt-2"><option value="all">All</option><option value="published">Published</option><option value="draft">Drafts</option></select></label><button className="text-indigo-300 border border-white/15 rounded-lg p-3" onClick={()=>setView(v=>v==='cards'?'table':'cards')}>{view==='cards'?'Table view':'Card view'}</button></div>
+      {selected.length>0&&<div className="flex flex-wrap gap-4 text-sm"><span>{selected.length} selected</span><button disabled={bulkBusy} onClick={()=>bulkPublish(true)}>Publish selected</button><button disabled={bulkBusy} onClick={()=>bulkPublish(false)}>Unpublish selected</button><button disabled={bulkBusy} onClick={()=>setSelected([])}>Clear</button></div>}
       {/* Projects Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -442,18 +457,18 @@ export default function Projects() {
             <SkeletonCard key={i} />
           ))}
         </div>
-      ) : projects.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <Card>
           <div className="p-16 text-center">
             <FolderGit2 className="w-10 h-10 text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">
-              No projects yet. Create your first one!
+              No matching projects. Clear your filters or add a project.
             </p>
           </div>
         </Card>
-      ) : (
+      ) : view==='table' ? <DataTable rows={filtered} selected={selected} onSelection={setSelected} columns={[{key:'Title',label:'Project',sortable:true},{key:'is_published',label:'Visibility',render:p=>p.is_published?'Published':'Draft'},{key:'actions',label:'Actions',render:p=><button className="text-indigo-300" onClick={()=>setEditProject(p)}>Edit</button>}]}/> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map((project) => (
+          {filtered.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
@@ -465,4 +480,6 @@ export default function Projects() {
       )}
     </div>
   );
-}
+}  const filtered=filterProjects(projects,search,visibility);
+  async function bulkPublish(published){if(bulkBusy)return;setBulkBusy(true);setError('');try{const {data,error}=await supabase.from('projects').update({is_published:published}).in('id',selected).select('id');if(error)throw error;if(data.length!==selected.length)throw Error('Some selected projects could not be updated. Refresh and retry.');setSelected([]);notify('Selected projects updated.');await fetchProjects();}catch(e){setError(e.message);}finally{setBulkBusy(false);}}
+

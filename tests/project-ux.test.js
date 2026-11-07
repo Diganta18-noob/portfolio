@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {validateProject,filterProjects} from '../src/utils/projectUx.js';
+test('project validation blocks script URLs and missing title but permits absent demo',()=>{assert.ok(validateProject({Title:' ',Link:'javascript:alert(1)'}).Link);assert.ok(validateProject({Title:''}).Title);assert.deepEqual(validateProject({Title:'Portfolio',Github:'https://github.com/example/repo',Link:''}),{});});
+test('project filters combine technology search and publication state',()=>{const rows=[{Title:'A',TechStack:['React'],is_published:true},{Title:'B',TechStack:['React'],is_published:false}];assert.equal(filterProjects(rows,' REACT ','draft').length,1);assert.equal(filterProjects(rows,'missing','all').length,0);});
