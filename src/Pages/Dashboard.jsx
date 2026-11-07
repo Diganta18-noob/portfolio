@@ -1,3 +1,5 @@
+import AnalystWorkspace from './dashboard/AnalystWorkspace';
+import AdminSessionObserver from '../components/AdminSessionObserver';
 import AdminFeedback from '../components/AdminFeedback';
 import { useState } from 'react'
 import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
@@ -9,6 +11,7 @@ import Messages from './dashboard/Messages'
 import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu } from 'lucide-react'
 
 const NAV_ITEMS = [
+  { to: 'analytics', label: 'Analytics studio', icon: LayoutDashboard },
   { to: 'messages', label: 'Private Messages', icon: MessageSquare },
   { to: 'projects', label: 'Projects', icon: FolderGit2 },
   { to: 'certificates', label: 'Certificates', icon: Award },
@@ -131,7 +134,7 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {error && <p role="alert" className="text-red-300">{error}</p>}
           <Link to="/" className="inline-block mb-5 text-indigo-300 text-sm hover:underline">View portfolio</Link>
-          <AdminFeedback/><Routes>
+          <AdminSessionObserver/><AdminFeedback/><Routes><Route path="analytics" element={<AnalystWorkspace/>}/>
             <Route index element={<Navigate to="projects" replace />} />
             <Route path="projects" element={<Projects />} />
             <Route path="certificates" element={<Certificates />} />
