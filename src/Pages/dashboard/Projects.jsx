@@ -389,6 +389,10 @@ export default function Projects() {
     catch(error) { setError(error.message); }
   };
 
+  const filtered=filterProjects(projects,search,visibility);
+  async function bulkPublish(published){if(bulkBusy)return;setBulkBusy(true);setError('');try{const {data,error}=await supabase.from('projects').update({is_published:published}).in('id',selected).select('id');if(error)throw error;if(data.length!==selected.length)throw Error('Some selected projects could not be updated. Refresh and retry.');setSelected([]);notify('Selected projects updated.');await fetchProjects();}catch(e){setError(e.message);}finally{setBulkBusy(false);}}
+
+
   return (
     <div className="space-y-6">
       {error && <p role="alert" className="relative z-[60] rounded-xl bg-red-950 p-4 text-red-200">{error}</p>}
@@ -480,6 +484,4 @@ export default function Projects() {
       )}
     </div>
   );
-}  const filtered=filterProjects(projects,search,visibility);
-  async function bulkPublish(published){if(bulkBusy)return;setBulkBusy(true);setError('');try{const {data,error}=await supabase.from('projects').update({is_published:published}).in('id',selected).select('id');if(error)throw error;if(data.length!==selected.length)throw Error('Some selected projects could not be updated. Refresh and retry.');setSelected([]);notify('Selected projects updated.');await fetchProjects();}catch(e){setError(e.message);}finally{setBulkBusy(false);}}
-
+}
