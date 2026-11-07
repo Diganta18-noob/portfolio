@@ -1,3 +1,4 @@
+import CommandPalette from '../components/CommandPalette';
 import AnalystWorkspace from './dashboard/AnalystWorkspace';
 import AdminSessionObserver from '../components/AdminSessionObserver';
 import AdminFeedback from '../components/AdminFeedback';
@@ -122,6 +123,7 @@ export default function Dashboard() {
         {/* Mobile topbar */}
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-white/3 backdrop-blur-xl shrink-0">
           <button
+            aria-label="Open navigation"
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white transition-colors"
           >
@@ -134,7 +136,7 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {error && <p role="alert" className="text-red-300">{error}</p>}
           <Link to="/" className="inline-block mb-5 text-indigo-300 text-sm hover:underline">View portfolio</Link>
-          <AdminSessionObserver/><AdminFeedback/><Routes><Route path="analytics" element={<AnalystWorkspace/>}/>
+          <CommandPalette/><AdminSessionObserver/><AdminFeedback/><Routes><Route path="analytics" element={<AnalystWorkspace/>}/>
             <Route index element={<Navigate to="projects" replace />} />
             <Route path="projects" element={<Projects />} />
             <Route path="certificates" element={<Certificates />} />
