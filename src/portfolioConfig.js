@@ -75,7 +75,7 @@ export const portfolioConfig = {
       ],
       "Link": "https://www.thoughtswhatever.in",
       "Github": "https://github.com/Diganta18-noob/Thoughts-Whatever",
-      "Img": "/project-thoughts-whatever.svg",
+      "Img": "/project-thoughts-whatever.png",
       "is_published": true,
       "order_index": 1,
       "id": "thoughts-whatever"
@@ -97,7 +97,7 @@ export const portfolioConfig = {
       ],
       "Link": "https://addadotcom.vercel.app",
       "Github": "https://github.com/Diganta18-noob/Addadotcom",
-      "Img": "/project-addadotcom.svg",
+      "Img": "/project-addadotcom.png",
       "is_published": true,
       "order_index": 2,
       "id": "addadotcom"
@@ -121,7 +121,7 @@ export const portfolioConfig = {
       ],
       "Link": "https://campusmanagement.vercel.app",
       "Github": "https://github.com/Diganta18-noob/New-Campus-Management",
-      "Img": "/project-campus-management.svg",
+      "Img": "/project-campus-management.png",
       "is_published": true,
       "order_index": 3,
       "id": "campus-management"
