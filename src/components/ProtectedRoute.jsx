@@ -28,7 +28,7 @@ export default function ProtectedRoute({children}) {
     window.addEventListener('focus',onFocus);
     return () => { active=false; clearTimeout(timer); subscription.unsubscribe(); window.removeEventListener('focus',onFocus); };
   }, []);
-  if (allowed === null) return <div role="status" className="min-h-screen flex items-center justify-center text-indigo-200">Checking admin access...</div>;
+  if (allowed === null) return <div role="status" className="admin-ui min-h-screen flex items-center justify-center">Checking admin access...</div>;
   if (!allowed) return <Navigate to="/login" replace />;
   return children;
 }

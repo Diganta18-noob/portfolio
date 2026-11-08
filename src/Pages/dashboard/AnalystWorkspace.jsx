@@ -1,5 +1,58 @@
-import {useEffect,useState} from 'react';
-import {supabase} from '../../supabase';
+import { useEffect, useState } from 'react';
+import { RefreshCw, Activity, Users, ArrowUpRight } from 'lucide-react';
 import Analytics from './Analytics';
-const formatDate=value=>new Date(value).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'});
-export default function AnalystWorkspace(){const [tab,setTab]=useState('audience'),[rows,setRows]=useState([]),[names,setNames]=useState({}),[error,setError]=useState(''),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);useEffect(()=>{if(tab!=='sessions')return;let active=true;setLoading(true);setError('');Promise.all([supabase.from('admin_workspace_sessions').select('*').order('started_at',{ascending:false}).limit(100),supabase.from('profiles').select('id,username')]).then(([sessions,profiles])=>{if(!active)return;setLoading(false);if(sessions.error){setError(sessions.error.message);return;}setRows(sessions.data);setNames(Object.fromEntries((profiles.data||[]).map(p=>[p.id,p.username])));});return()=>{active=false;};},[tab,refresh]);const observed=rows.reduce((n,r)=>n+r.active_seconds,0);return <section className="analyst-workspace space-y-6"><header><p className="text-[#92929b] text-xs">Portfolio intelligence</p><h1 className="text-3xl font-medium mt-2">Analytics studio</h1><p className="text-[#b1b1b8] mt-2 text-sm">Audience engagement and identified admin workspace activity.</p></header><div role="tablist" aria-label="Analytics views" className="flex gap-2 border-b border-white/10 pb-3">{[['audience','Audience & projects'],['sessions','Admin sessions']].map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} onClick={()=>setTab(id)} className={`px-4 py-2 rounded-lg text-sm ${tab===id?'bg-[#242427] text-[#90baff]':'text-[#b1b1b8]'}`}>{label}</button>)}</div>{tab==='audience'?<Analytics/>:<div className="space-y-6"><div className="grid sm:grid-cols-3 gap-4">{[['Retained sessions shown',rows.length],['Observed active minutes',Math.round(observed/60)],['Recently seen',rows.filter(r=>!r.ended_at&&Date.now()-Date.parse(r.last_seen_at)<90000).length]].map(([label,value])=><div key={label} className="rounded-xl border border-white/10 bg-[#1b1b1e] p-5"><p className="text-xs text-[#b1b1b8]">{label}</p><p className="text-3xl mt-3 tabular-nums">{value}</p></div>)}</div><div className="flex justify-between gap-4"><p className="text-xs text-[#b1b1b8] max-w-3xl leading-relaxed">Workspace observations, not a complete authentication log. Active time is estimated from visible, recently interacted-with tabs sampled every 30 seconds; inactivity over 2 minutes stops sampling. Abrupt tab closure may leave no recorded end. Separate tabs count separately. Latest 100 sessions shown; durations are not additive across overlapping tabs.</p><button className="text-[#90baff] text-sm" onClick={()=>setRefresh(n=>n+1)}>Refresh</button></div>{error?<p role="alert" className="text-red-300">Session tracking unavailable. Run the admin-session-analytics migration. {error}</p>:loading?<p role="status">Loading sessions…</p>:<div className="overflow-x-auto border border-white/10 rounded-xl"><table className="w-full text-sm text-left"><thead className="bg-[#1b1b1e]"><tr>{['Account','Workspace opened','Last observation','Observed active time','State'].map(h=><th key={h} className="p-4 whitespace-nowrap">{h}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-t border-white/10"><td className="p-4"><strong>{names[r.user_id]||'Admin account'}</strong><p className="text-xs text-[#92929b] mt-1" title={r.user_id}>{r.user_id.slice(0,8)}…</p></td><td className="p-4 whitespace-nowrap">{formatDate(r.started_at)}</td><td className="p-4 whitespace-nowrap">{formatDate(r.last_seen_at)}</td><td className="p-4 tabular-nums">{Math.floor(r.active_seconds/60)}m {r.active_seconds%60}s</td><td className="p-4">{r.ended_at?'Ended':Date.now()-Date.parse(r.last_seen_at)<90000?'Recently seen':'Inactive / end unknown'}</td></tr>)}</tbody></table>{!rows.length&&<p className="p-8 text-[#b1b1b8]">No workspace sessions recorded yet.</p>}</div>}</div>}</section>}
+import { supabase } from '../../supabase';
+
+const formatDate = value => new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function AdminSessions() {
+  const [rows, setRows] = useState([]);
+  const [names, setNames] = useState({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(0);
+  const [asOf, setAsOf] = useState(Date.now());
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError('');
+    async function load() {
+      try {
+        const [sessions, profiles] = await Promise.all([
+          supabase.from('admin_workspace_sessions').select('*').order('started_at', { ascending: false }).limit(100),
+          supabase.from('profiles').select('id,username'),
+        ]);
+        if (sessions.error) throw sessions.error;
+        if (profiles.error) throw profiles.error;
+        if (!active) return;
+        setRows(sessions.data || []);
+        setNames(Object.fromEntries((profiles.data || []).map(profile => [profile.id, profile.username])));
+        setAsOf(Date.now());
+      } catch (error) { if (active) setError(error.message); }
+      finally { if (active) setLoading(false); }
+    }
+    load();
+    return () => { active = false; };
+  }, [refresh]);
+  const observed = rows.reduce((sum, row) => sum + row.active_seconds, 0);
+  const recent = row => !row.ended_at && asOf - Date.parse(row.last_seen_at) < 90000;
+  return <div className="report-stack">
+    <div className="report-controls"><div><span className="report-period-label">Workspace observations</span><p>Latest 100 retained sessions</p></div><button className="report-button" disabled={loading} onClick={() => setRefresh(value => value + 1)}><RefreshCw size={16} />Refresh</button></div>
+    {error ? <div className="report-error" role="alert">Session tracking unavailable. Check the admin-session-analytics migration. {error}</div> : loading ? <p role="status" className="report-loading">Loading workspace sessions…</p> : <>
+      <div className="kpi-strip three">{[['Sessions retained', rows.length, 'Within the latest 100 observations'], ['Observed active minutes', Math.round(observed / 60), 'Overlapping tabs are counted separately'], ['Recently seen', rows.filter(recent).length, 'As of the last refresh · within 90 seconds']].map(([label, value, note]) => <article key={label} className="kpi"><p className="kpi-label">{label}</p><div className="kpi-value">{value.toLocaleString('en-IN')}</div><p className="kpi-definition">{note}</p></article>)}</div>
+      <section className="report-panel"><header className="panel-heading"><div><h2>Workspace activity</h2><p>Account-level observations · dates in Asia/Kolkata</p></div><span className="panel-meta">{rows.length} sessions</span></header>
+        <div className="report-table-scroll"><table className="report-table"><caption className="sr-only">Retained administrator workspace sessions</caption><thead><tr>{['Account', 'Workspace opened', 'Last observation', 'Observed active time', 'State'].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={row.id}><td><strong>{names[row.user_id] || 'Admin account'}</strong><p className="table-secondary" title={row.user_id}>{row.user_id.slice(0, 8)}…</p></td><td>{formatDate(row.started_at)}</td><td>{formatDate(row.last_seen_at)}</td><td>{Math.floor(row.active_seconds / 60)}m {row.active_seconds % 60}s</td><td><span className={`status-badge ${recent(row) ? 'positive' : ''}`}>{row.ended_at ? 'Ended' : recent(row) ? 'Recently seen' : 'Inactive / end unknown'}</span></td></tr>)}</tbody></table></div>
+        {!rows.length && <p className="report-empty-inline">No workspace sessions recorded yet</p>}
+        <details className="report-methodology"><summary>How active time is measured</summary><p>These are workspace observations, not a complete authentication log. Visible tabs with recent interaction are sampled every 30 seconds. Inactivity over 2 minutes stops sampling. Abrupt closure may leave no recorded end. Tabs count separately and durations are not additive across overlapping tabs.</p></details>
+      </section>
+    </>}
+  </div>;
+}
+
+export default function AnalystWorkspace() {
+  const [tab, setTab] = useState('audience');
+  return <section className="analyst-workspace">
+    <header className="workspace-heading"><div><p className="workspace-eyebrow">Portfolio intelligence</p><h1>Performance overview</h1><p className="workspace-description">A measured view of your audience, projects and enquiries</p></div><span className="workspace-edition"><span>DB</span>Analytics workspace<ArrowUpRight size={14} /></span></header>
+    <nav className="report-tabs" aria-label="Analytics views">{[['audience', 'Audience & projects', Activity], ['sessions', 'Admin sessions', Users]].map(([id, label, Icon]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={16} />{label}</button>)}</nav>
+    {tab === 'audience' ? <Analytics /> : <AdminSessions />}
+  </section>;
+}

@@ -25,13 +25,13 @@ export default function Overview() {
     return () => { active = false; };
   }, []);
   return <section className="space-y-8">
-    <header><p className="text-xs  text-[#90baff] mb-2">Your workspace</p><h1 className="text-3xl font-medium">Portfolio overview</h1><p className="text-[#b1b1b8] mt-2">Manage your work and keep up with new opportunities.</p></header>
-    {error && <p role="alert" className="text-red-300">{error}</p>}
+    <header><p className="text-xs  text-[#315cbd] mb-2">Your workspace</p><h1 className="text-3xl font-medium">Portfolio overview</h1><p className="text-[#5c6980] mt-2">Manage your work and keep up with new opportunities.</p></header>
+    {error && <p role="alert" className="text-red-700">{error}</p>}
     {!stats && !error && <p role="status">Loading portfolio summary…</p>}
-    {stats && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{['Published projects', 'Draft projects', 'Unread enquiries', 'Total enquiries'].map((label, index) => <Link key={label} to={index < 2 ? '../projects' : '../messages'} className="admin-metric block p-6 rounded-xl border border-white/10"><p className="text-[#b1b1b8] text-sm">{label}</p><p className="text-4xl font-medium mt-4 tabular-nums">{stats[index]}</p><p className="text-xs text-[#92929b] mt-3">Current total · all time</p></Link>)}</div>}
+    {stats && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{['Published projects', 'Draft projects', 'Unread enquiries', 'Total enquiries'].map((label, index) => <Link key={label} to={index < 2 ? '../projects' : '../messages'} className="admin-metric block p-6 rounded-xl border border-[#e0e5ed]"><p className="text-[#5c6980] text-sm">{label}</p><p className="text-4xl font-medium mt-4 tabular-nums">{stats[index]}</p><p className="text-xs text-[#68758a] mt-3">Current total · all time</p></Link>)}</div>}
     <div className="grid lg:grid-cols-2 gap-6">
-      <article className="admin-metric rounded-xl border border-white/10 p-6"><h2 className="text-lg font-medium">Keep your portfolio current</h2><p className="text-[#b1b1b8] text-sm mt-2 mb-5">Review drafts, update case studies and publish your latest work.</p><Link to="../projects" className="text-[#90baff] underline">Manage projects →</Link></article>
-      <article className="admin-metric rounded-xl border border-white/10 p-6"><h2 className="text-lg font-medium">Audience analytics</h2><p className="text-[#b1b1b8] text-sm mt-2">Visitor tracking is not configured. Traffic, résumé clicks and conversion metrics will become available after event collection is implemented. No historical traffic has been inferred.</p></article>
+      <article className="admin-metric rounded-xl border border-[#e0e5ed] p-6"><h2 className="text-lg font-medium">Keep your portfolio current</h2><p className="text-[#5c6980] text-sm mt-2 mb-5">Review drafts, update case studies and publish your latest work.</p><Link to="../projects" className="text-[#315cbd] underline">Manage projects →</Link></article>
+      <article className="admin-metric rounded-xl border border-[#e0e5ed] p-6"><h2 className="text-lg font-medium">Audience analytics</h2><p className="text-[#5c6980] text-sm mt-2">Visitor tracking is not configured. Traffic, résumé clicks and conversion metrics will become available after event collection is implemented. No historical traffic has been inferred.</p></article>
     </div>
   </section>;
 }

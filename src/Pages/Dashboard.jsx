@@ -9,11 +9,13 @@ import Projects from './dashboard/Projects'
 import Certificates from './dashboard/Certificates'
 import Comments from './dashboard/Comments'
 import Messages from './dashboard/Messages'
-import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, X, ArrowUpRight, ChevronRight } from 'lucide-react'
+import Reports from './dashboard/Reports'
+import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, X, ArrowUpRight, ChevronRight, FileBarChart2 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { to: 'analytics', label: 'Analytics studio', icon: LayoutDashboard },
-  { to: 'messages', label: 'Private messages', icon: MessageSquare },
+  { to: 'analytics', label: 'Overview', icon: LayoutDashboard },
+  { to: 'reports', label: 'Enquiry reports', icon: FileBarChart2 },
+  { to: 'messages', label: 'Inbox', icon: MessageSquare },
   { to: 'projects', label: 'Projects', icon: FolderGit2 },
   { to: 'certificates', label: 'Certificates', icon: Award },
   { to: 'comments', label: 'Comments', icon: MessageSquare },
@@ -67,9 +69,9 @@ export default function Dashboard() {
       <aside ref={sidebar} inert={!desktop && !sidebarOpen ? '' : undefined} id="admin-navigation" aria-label="Workspace navigation" className={`admin-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
         <div className="admin-sidebar-content">
           <button className="admin-drawer-close" aria-label="Close navigation" onClick={closeSidebar}><X size={16} /></button>
-          <Link to="/dashboard/projects" className="admin-brand" onClick={() => setSidebarOpen(false)}>
+          <Link to="/dashboard/analytics" className="admin-brand" onClick={() => setSidebarOpen(false)}>
             <span className="admin-monogram">DB</span>
-            <span><strong>Portfolio manager</strong><small>Diganta Biswas</small></span>
+            <span><strong>Diganta Biswas</strong><small>Portfolio workspace</small></span>
           </Link>
           <nav className="admin-nav" aria-label="Admin pages">
             <p className="admin-nav-label">Workspace</p>
@@ -90,7 +92,7 @@ export default function Dashboard() {
           <div className="admin-breadcrumb">
             <button ref={menuButton} className="admin-menu-toggle" aria-label="Open navigation" aria-expanded={sidebarOpen} aria-controls="admin-navigation" onClick={() => setSidebarOpen(true)}><Menu size={18} /></button>
             <span className="admin-workspace-label">Workspace</span><ChevronRight className="admin-workspace-label" size={14} aria-hidden="true" />
-            <strong>{current?.label || 'Projects'}</strong>
+            <strong>{current?.label || 'Overview'}</strong>
           </div>
           <div className="admin-toolbar-actions">
             <CommandPalette />
@@ -103,12 +105,13 @@ export default function Dashboard() {
             <AdminSessionObserver /><AdminFeedback />
             <Routes>
               <Route path="analytics" element={<AnalystWorkspace />} />
-              <Route index element={<Navigate to="projects" replace />} />
+              <Route index element={<Navigate to="analytics" replace />} />
               <Route path="projects" element={<Projects />} />
               <Route path="certificates" element={<Certificates />} />
               <Route path="comments" element={<Comments />} />
               <Route path="messages" element={<Messages />} />
-              <Route path="*" element={<Navigate to="projects" replace />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="*" element={<Navigate to="analytics" replace />} />
             </Routes>
           </div>
         </main>

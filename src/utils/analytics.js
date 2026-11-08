@@ -8,6 +8,30 @@ export function summarizeEvents(rows, start, end) {
 }
 export function periodDelta(current,previous){return previous===0?(current===0?'—':'New'):((current-previous)/previous*100).toFixed(1)+'%';}
 
+// Rolling windows are bucketed at Kolkata midnight. Prior observations are
+// shifted by the exact window length, so partial first/last days also align.
+export function dailyActivity(rows, start, end) {
+ const dayMs = 86400000, offset = 19800000;
+ if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return [];
+ const bucket = time => Math.floor((time + offset) / dayMs);
+ const first = bucket(start), last = bucket(end - 1), duration = end - start;
+ const days = Array.from({length: last - first + 1}, (_, index) => ({
+  day: new Date((first + index) * dayMs).toISOString().slice(0, 10),
+  events: 0, previousEvents: 0, sessions: new Set(),
+ }));
+ for (const row of rows) {
+  const time = Date.parse(row.received_at);
+  if (time >= start && time < end) {
+   const day = days[bucket(time) - first];
+   day.events++;
+   day.sessions.add(row.session_id);
+  } else if (time >= start - duration && time < start) {
+   days[bucket(time + duration) - first].previousEvents++;
+  }
+ }
+ return days.map(day => ({...day, sessions: day.sessions.size}));
+}
+
 export function projectPerformance(rows,start,end){
  const projects=new Map(),sessions=new Map();
  function item(key){if(!projects.has(key))projects.set(key,{key,views:0,demo:0,source:0,leads:0,viewers:new Set(),clickers:new Set()});return projects.get(key);}

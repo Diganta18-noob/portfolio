@@ -40,8 +40,8 @@ export default function Login() {
         </div>
         <div className="admin-panel admin-login-panel">
           <header><h1>Admin sign in</h1><p>Manage your projects, messages and portfolio content</p></header>
-          {!isBackendConfigured && <p role="status" className="text-amber-200 text-sm mb-6">Admin login needs your Supabase project. {backendSetupMessage} Run supabase/setup.sql and create an admin profile using BACKEND-SETUP.md.</p>}
-          {errorMessage && <p role="alert" className="text-red-300 text-sm mb-6">{errorMessage}</p>}
+          {!isBackendConfigured && <p role="status" className="text-amber-800 text-sm mb-6">Admin login needs your Supabase project. {backendSetupMessage} Run supabase/setup.sql and create an admin profile using BACKEND-SETUP.md.</p>}
+          {errorMessage && <p role="alert" className="text-red-700 text-sm mb-6">{errorMessage}</p>}
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label htmlFor="admin-email">Email</label>

@@ -7,7 +7,7 @@ import { Award, Upload, Trash2, ImageIcon, Plus } from 'lucide-react'
 const Card = ({ children, className = '' }) => (
   <div className={`relative group ${className}`}>
 
-    <div className="relative bg-[#1b1b1e]  border border-white/10 rounded-xl h-full">
+    <div className="relative bg-white  border border-[#e0e5ed] rounded-xl h-full">
       {children}
     </div>
   </div>
@@ -16,8 +16,8 @@ const Card = ({ children, className = '' }) => (
 const SkeletonCard = () => (
   <div className="relative">
 
-    <div className="relative bg-[#1b1b1e] border border-white/10 rounded-xl overflow-hidden">
-      <div className="w-full aspect-[16/11.5] bg-[#1b1b1e] " />
+    <div className="relative bg-white border border-[#e0e5ed] rounded-xl overflow-hidden">
+      <div className="w-full aspect-[16/11.5] bg-white " />
     </div>
   </div>
 )
@@ -28,10 +28,10 @@ const CertCard = ({ cert, onDelete }) => {
   return (
     <div className="relative group">
 
-      <div className="relative bg-[#1b1b1e] border border-white/10 rounded-xl overflow-hidden">
+      <div className="relative bg-white border border-[#e0e5ed] rounded-xl overflow-hidden">
         {/* Skeleton shown until image loads */}
         {!imgLoaded && (
-          <div className="w-full aspect-[16/11.5] bg-[#1b1b1e] " />
+          <div className="w-full aspect-[16/11.5] bg-white " />
         )}
         <img
           src={cert.Img}
@@ -41,10 +41,10 @@ const CertCard = ({ cert, onDelete }) => {
           className={`w-full aspect-[16/11.5] object-cover  transition-transform duration-500 ${imgLoaded ? 'block' : 'hidden'}`}
         />
         {imgLoaded && (
-          <div className="absolute inset-0 bg-black/70 opacity-100 transition-opacity duration-300 flex items-end p-3">
+          <div className="p-3 border-t border-[#e0e5ed] bg-white">
             <button
               onClick={() => onDelete(cert.id)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs w-full justify-center hover:bg-red-500/30 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-700 text-xs w-full justify-center hover:bg-red-500/30 transition-colors"
             >
               <Trash2 className="w-3 h-3" /> Delete
             </button>
@@ -100,18 +100,18 @@ export default function Certificates() {
 
   return (
     <div className="space-y-6">
-      {error && <p role="alert" className="text-red-300 p-4">{error}</p>}
+      {error && <p role="alert" className="text-red-700 p-4">{error}</p>}
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="relative">
 
           <div className="admin-page-icon">
-            <Award className="w-4 h-4 text-[#90baff]" />
+            <Award className="w-4 h-4 text-[#315cbd]" />
           </div>
         </div>
         <div>
-          <h1 className="text-xl sm:text-2xl font-medium text-white">Certificates</h1>
-          <p className="text-[#92929b] text-xs">
+          <h1 className="text-xl sm:text-2xl font-medium text-[#17243b]">Certificates</h1>
+          <p className="text-[#68758a] text-xs">
             {loading ? 'Loading...' : `${certs.length} certificates total`}
           </p>
         </div>
@@ -120,8 +120,8 @@ export default function Certificates() {
       {/* Upload Card */}
       <Card>
         <div className="p-5 sm:p-6 space-y-4">
-          <h2 className="text-sm font-medium text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#90baff]" /> Upload certificate
+          <h2 className="text-sm font-medium text-[#17243b] flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#315cbd]" /> Upload certificate
           </h2>
 
           <label
@@ -129,18 +129,18 @@ export default function Certificates() {
             onDragLeave={() => setDragOver(false)}
             onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]) }}
             className={`flex flex-col items-center justify-center w-full min-h-[160px] rounded-xl border-2 border-dashed cursor-pointer transition-colors duration-300 ${
-              dragOver ? 'border-[#45454b] bg-[#242427]' : 'border-white/10 bg-[#1b1b1e] hover:border-[#45454b] hover:bg-white/7'
+              dragOver ? 'border-[#cdd6e3] bg-[#f0f3f8]' : 'border-[#e0e5ed] bg-white hover:border-[#cdd6e3] hover:bg-[#f0f3f8]'
             }`}
           >
             {preview ? (
               <img src={preview} alt="preview" className="max-h-40 object-contain rounded-lg p-2" />
             ) : (
               <div className="text-center space-y-2 p-6">
-                <div className="w-11 h-11 rounded-full bg-[#242427] border border-[#45454b] flex items-center justify-center mx-auto">
-                  <ImageIcon className="w-5 h-5 text-[#90baff]" />
+                <div className="w-11 h-11 rounded-full bg-[#f0f3f8] border border-[#cdd6e3] flex items-center justify-center mx-auto">
+                  <ImageIcon className="w-5 h-5 text-[#315cbd]" />
                 </div>
-                <p className="text-sm text-gray-300">Drag & drop or click to upload</p>
-                <p className="text-xs text-[#92929b]">PNG, JPG, WEBP supported</p>
+                <p className="text-sm text-[#475569]">Drag & drop or click to upload</p>
+                <p className="text-xs text-[#68758a]">PNG, JPG, WEBP supported</p>
               </div>
             )}
             <input type="file" accept="image/*" onChange={e => handleFile(e.target.files[0])} className="hidden" />
@@ -148,17 +148,17 @@ export default function Certificates() {
 
           {file && (
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-xs text-[#b1b1b8] truncate flex-1">{file.name}</p>
+              <p className="text-xs text-[#5c6980] truncate flex-1">{file.name}</p>
               <div className="flex gap-2 shrink-0">
                 <button onClick={() => { setFile(null); setPreview(null) }}
-                  className="px-3 py-1.5 rounded-xl border border-white/10 text-[#92929b] hover:text-white text-xs transition-colors">
+                  className="px-3 py-1.5 rounded-xl border border-[#e0e5ed] text-[#68758a] hover:text-[#315cbd] text-xs transition-colors">
                   Clear
                 </button>
                 <button onClick={uploadImage} disabled={uploading} className="admin-primary">
 
                   <div className="flex items-center gap-2">
-                    {uploading ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#90baff]" />}
-                    <span className="text-xs text-gray-200">{uploading ? 'Uploading...' : 'Upload'}</span>
+                    {uploading ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#315cbd]" />}
+                    <span className="text-xs text-[#334155]">{uploading ? 'Uploading...' : 'Upload'}</span>
                   </div>
                 </button>
               </div>
@@ -177,8 +177,8 @@ export default function Certificates() {
       ) : certs.length === 0 ? (
         <Card>
           <div className="p-16 text-center">
-            <Award className="w-10 h-10 text-[#92929b] mx-auto mb-3" />
-            <p className="text-[#92929b] text-sm">No certificates yet.</p>
+            <Award className="w-10 h-10 text-[#68758a] mx-auto mb-3" />
+            <p className="text-[#68758a] text-sm">No certificates yet.</p>
           </div>
         </Card>
       ) : (
